@@ -2,22 +2,44 @@ use super::decoder;
 use super::encoder;
 use super::error::Error;
 
-struct Buffer {
+pub struct Buffer {
   bytes: Vec<u8>,
 }
 
 impl Buffer {
-  fn new(bytes: Vec<u8>) -> Self {
+  pub fn new(bytes: Vec<u8>) -> Self {
     Buffer { bytes }
   }
 
-  fn from_hex(hex_str: &str) -> Result<Self, Error> {
+  pub fn from_hex(hex_str: &str) -> Result<Self, Error> {
     let bytes = decoder::from_hex(hex_str)?;
     Ok(Buffer { bytes })
   }
 
-  fn to_base64(&self) -> String {
+  pub fn to_base64(&self) -> String {
     encoder::to_base64(&self.bytes)
+  }
+
+  pub fn to_hex(&self) -> String {
+    encoder::to_hex(&self.bytes)
+  }
+
+  pub fn xor(&self, other: &Buffer) -> Result<Buffer, Error> {
+    let len1 = self.bytes.len();
+    let len2 = other.bytes.len();
+
+    if len1 != len2 {
+      return Err(Error::XorError);
+    }
+
+    let result: Vec<u8> = self
+      .bytes
+      .iter()
+      .zip(other.bytes.iter())
+      .map(|(a, b)| a ^ b)
+      .collect();
+
+    Ok(Buffer::new(result))
   }
 }
 
@@ -59,4 +81,13 @@ fn test_hex_to_b64() {
   let b64 = "SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t";
   let result = buffer.unwrap().to_base64();
   assert_eq!(result, b64)
+}
+
+#[test]
+fn test_fixed_xor() {
+  let b1 = Buffer::from_hex("1c0111001f010100061a024b53535009181c").unwrap();
+  let b2 = Buffer::from_hex("686974207468652062756c6c277320657965").unwrap();
+  let result = b1.xor(&b2).unwrap().to_hex();
+  let expected = "746865206b696420646f6e277420706c6179";
+  assert_eq!(result, expected);
 }

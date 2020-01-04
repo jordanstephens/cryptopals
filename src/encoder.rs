@@ -1,5 +1,15 @@
+pub fn to_hex(bytes: &[u8]) -> String {
+  let charset = Charset::hex();
+  let out_bytes = bytes.iter().map(|byte| {
+    let high = ((byte & 0xf0) >> 4) as usize;
+    let low = (byte & 0x0f) as usize;
+    vec![charset.table[high], charset.table[low]]
+  }).flatten().collect();
+  String::from_utf8(out_bytes).expect("invalid utf8")
+}
+
 pub fn to_base64(bytes: &[u8]) -> String {
-  let charset = Charset::new();
+  let charset = Charset::base64();
   let chunk_size = 3;
   let chunks = bytes.chunks_exact(chunk_size);
   let remainder = chunks.remainder();
@@ -50,11 +60,19 @@ struct Charset {
 }
 
 impl Charset {
-  fn new() -> Self {
+  fn new(chars: &str) -> Self {
     Charset {
-      table: String::from("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+      table: String::from(chars)
         .as_bytes()
         .to_vec(),
     }
+  }
+
+  fn base64() -> Self {
+    Charset::new("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+  }
+
+  fn hex() -> Self {
+    Charset::new("0123456789abcdef")
   }
 }
