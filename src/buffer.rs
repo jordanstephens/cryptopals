@@ -3,7 +3,7 @@ use super::encoder;
 use super::error::Error;
 
 pub struct Buffer {
-  bytes: Vec<u8>,
+  pub bytes: Vec<u8>,
 }
 
 impl Buffer {

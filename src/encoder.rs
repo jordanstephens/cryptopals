@@ -1,10 +1,14 @@
 pub fn to_hex(bytes: &[u8]) -> String {
   let charset = Charset::hex();
-  let out_bytes = bytes.iter().map(|byte| {
-    let high = ((byte & 0xf0) >> 4) as usize;
-    let low = (byte & 0x0f) as usize;
-    vec![charset.table[high], charset.table[low]]
-  }).flatten().collect();
+  let out_bytes = bytes
+    .iter()
+    .map(|byte| {
+      let high = ((byte & 0xf0) >> 4) as usize;
+      let low = (byte & 0x0f) as usize;
+      vec![charset.table[high], charset.table[low]]
+    })
+    .flatten()
+    .collect();
   String::from_utf8(out_bytes).expect("invalid utf8")
 }
 
@@ -62,9 +66,7 @@ struct Charset {
 impl Charset {
   fn new(chars: &str) -> Self {
     Charset {
-      table: String::from(chars)
-        .as_bytes()
-        .to_vec(),
+      table: String::from(chars).as_bytes().to_vec(),
     }
   }
 
