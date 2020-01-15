@@ -2,7 +2,15 @@ use super::distribution::score;
 use ordered_float::OrderedFloat;
 use rayon::prelude::*;
 
+pub fn encrypt(bytes: &[u8], key: &[u8]) -> Vec<u8> {
+  xor(bytes, key)
+}
+
 pub fn decrypt(bytes: &[u8], key: &[u8]) -> Vec<u8> {
+  xor(bytes, key)
+}
+
+fn xor(bytes: &[u8], key: &[u8]) -> Vec<u8> {
   bytes
     .iter()
     .zip(key.iter().cycle())
@@ -82,5 +90,14 @@ mod tests {
     let expected = "Now that the party is jumping\n".as_bytes();
     assert_eq!(result.key, 53);
     assert_eq!(result.plaintext, expected);
+  }
+
+  #[test]
+  fn test_encrypt_repeating_key_xor() {
+    let plaintext = "Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal";
+    let key = "ICE";
+    let expected = decoder::from_hex("0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f").unwrap();
+    let ciphertext = encrypt(plaintext.as_bytes(), key.as_bytes());
+    assert_eq!(ciphertext, expected)
   }
 }
